@@ -1,12 +1,16 @@
 import pytz
 from datetime import datetime, timedelta
 from ntscraper import Nitter
+from celery import Celery
 
+app=Celery("gettweets")
+app.config_from_object('celeryconfig')
 scraper = Nitter(log_level=0, skip_instance_check=False)
 scraper.instance = "https://nitter.woodland.cafe/"
 
+@app.task
 def fetch_24_hour_tweets(users):
-    timezone = pytz.timezone("America/New_York")  
+    timezone = pytz.timezone("UTC")  
     current_time = datetime.now(timezone)
     last_24_hours = current_time - timedelta(hours=24)
 
@@ -37,5 +41,4 @@ def fetch_24_hour_tweets(users):
             print(f"No tweets were found for user: {user}.")
 
 
-users = ['BarackObama', 'elonmusk']
-fetch_24_hour_tweets(users)
+
